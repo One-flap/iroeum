@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'router/app_router.dart';
+import 'services/user_service.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
+
+  // 사용자 데이터 로드
+  await UserService().loadUserData();
+
   runApp(const MyApp());
 }
 

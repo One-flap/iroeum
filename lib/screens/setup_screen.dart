@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../services/user_service.dart';
 
 class SetupScreen extends StatefulWidget {
   const SetupScreen({Key? key}) : super(key: key);
@@ -112,7 +114,7 @@ class _SetupScreenState extends State<SetupScreen>
     }
   }
 
-  void _handleSubmit(String value) {
+  void _handleSubmit(String value) async {
     if (value.trim().isNotEmpty) {
       if (_teddyName.isEmpty) {
         // 첫 번째 입력: 테디 이름
@@ -129,6 +131,9 @@ class _SetupScreenState extends State<SetupScreen>
           _isInputMode = false;
         });
         _focusNode.unfocus();
+
+        // UserService를 통해 이름 저장 (SharedPreferences + 메모리)
+        await UserService().saveUserData(_teddyName, _userName);
 
         // 애니메이션이 끝난 후 Home으로 이동
         Future.delayed(const Duration(milliseconds: 500), () {

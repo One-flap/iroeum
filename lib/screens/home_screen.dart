@@ -6,6 +6,10 @@ import 'package:iconify_flutter/icons/ph.dart';
 import 'package:iconify_flutter/icons/ri.dart';
 import 'package:iconify_flutter/icons/mingcute.dart';
 import 'package:iconify_flutter/icons/ic.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'customize_screen.dart';
+import '../widgets/bottom_nav_bar.dart';
+import '../services/user_service.dart';
 
 
 // main.dart
@@ -19,6 +23,10 @@ final GoRouter _router = GoRouter(
     GoRoute(
       path: '/',
       builder: (context, state) => const HomeScreen(),
+    ),
+    GoRoute(
+      path: '/customize',
+      builder: (context, state) => const CustomizeScreen(),
     ),
   ],
 );
@@ -54,6 +62,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   late Animation<double> _scaleAnimation;
   bool _showMoodBox = true;
 
+  // 미션 상태 관리
+  List<bool> _missionCompleted = [false, false, false];
+  int _mealCount = 0; // 밥먹고 약먹기 카운트 (0-3)
+
+  // 검색 텍스트 컨트롤러
+  final TextEditingController _searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -76,16 +91,124 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       ),
     );
 
-    _animationController.forward();
+    _checkMoodBoxStatus();
+    _loadMissionStatus();
+  }
+
+  // 미션 상태 불러오기
+  Future<void> _loadMissionStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final today = DateTime.now().toIso8601String().split('T')[0];
+    final savedDate = prefs.getString('mission_date');
+
+    if (savedDate == today) {
+      // 오늘 저장된 미션 상태 불러오기
+      setState(() {
+        _missionCompleted[0] = prefs.getBool('mission_0') ?? false;
+        _missionCompleted[1] = prefs.getBool('mission_1') ?? false;
+        _missionCompleted[2] = prefs.getBool('mission_2') ?? false;
+        _mealCount = prefs.getInt('meal_count') ?? 0;
+      });
+    } else {
+      // 새로운 날이면 미션 초기화
+      await _resetMissions();
+    }
+  }
+
+  // 미션 상태 저장
+  Future<void> _saveMissionStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final today = DateTime.now().toIso8601String().split('T')[0];
+
+    await prefs.setString('mission_date', today);
+    await prefs.setBool('mission_0', _missionCompleted[0]);
+    await prefs.setBool('mission_1', _missionCompleted[1]);
+    await prefs.setBool('mission_2', _missionCompleted[2]);
+    await prefs.setInt('meal_count', _mealCount);
+  }
+
+  // 미션 초기화
+  Future<void> _resetMissions() async {
+    final prefs = await SharedPreferences.getInstance();
+    final today = DateTime.now().toIso8601String().split('T')[0];
+
+    setState(() {
+      _missionCompleted = [false, false, false];
+      _mealCount = 0;
+    });
+
+    await prefs.setString('mission_date', today);
+    await prefs.setBool('mission_0', false);
+    await prefs.setBool('mission_1', false);
+    await prefs.setBool('mission_2', false);
+    await prefs.setInt('meal_count', 0);
+  }
+
+  // 밥먹고 약먹기 미션 토글 (카운트 증가)
+  void _toggleMealMission() {
+    setState(() {
+      if (_mealCount < 3) {
+        _mealCount++;
+      } else {
+        _mealCount = 0;
+      }
+      _missionCompleted[0] = _mealCount == 3;
+    });
+    _saveMissionStatus();
+  }
+
+  // 일반 미션 토글
+  void _toggleMission(int index) {
+    setState(() {
+      _missionCompleted[index] = !_missionCompleted[index];
+    });
+    _saveMissionStatus();
+  }
+
+  // 오늘 기분 선택 박스를 이미 봤는지 확인
+  Future<void> _checkMoodBoxStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lastMoodDate = prefs.getString('last_mood_date');
+    final today = DateTime.now().toIso8601String().split('T')[0]; // YYYY-MM-DD
+
+    if (lastMoodDate == today) {
+      // 오늘 이미 기분을 선택했으면 박스를 표시하지 않음
+      setState(() {
+        _showMoodBox = false;
+      });
+    } else {
+      // 오늘 처음이면 박스를 표시
+      setState(() {
+        _showMoodBox = true;
+      });
+      _animationController.forward();
+    }
   }
 
   @override
   void dispose() {
     _animationController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
-  void _onMoodSelected() {
+  // 검색 후 채팅으로 이동
+  void _searchAndNavigateToChat() {
+    final query = _searchController.text.trim();
+    if (query.isNotEmpty) {
+      context.go('/chat?query=$query');
+      _searchController.clear();
+    }
+  }
+
+  Future<void> _onMoodSelected(int moodIndex) async {
+    // 오늘 날짜 저장 및 기분 데이터 저장
+    final prefs = await SharedPreferences.getInstance();
+    final today = DateTime.now().toIso8601String().split('T')[0]; // YYYY-MM-DD
+    await prefs.setString('last_mood_date', today);
+    await prefs.setInt('mood_$today', moodIndex); // 0: 기쁨, 1: 보통, 2: 슬픔
+
+    // 애니메이션으로 박스 숨기기
     _animationController.reverse().then((_) {
       setState(() {
         _showMoodBox = false;
@@ -130,22 +253,22 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       RichText(
-                                        text: const TextSpan(
-                                          style: TextStyle(
+                                        text: TextSpan(
+                                          style: const TextStyle(
                                             fontSize: 18,
                                             color: Color(0xFF8B7355),
                                             fontFamily: 'OwnGlyph Meetme',
                                           ),
                                           children: [
-                                            TextSpan(text: '안녕! 오늘은 용기 '),
-                                            TextSpan(
+                                            TextSpan(text: '안녕 ${UserService().userName}! 오늘은 용기 '),
+                                            const TextSpan(
                                               text: '80%',
                                               style: TextStyle(
                                                 color: Color(0xFFFF9933),
                                                 fontWeight: FontWeight.bold,
                                               ),
                                             ),
-                                            TextSpan(text: ' 충전이야'),
+                                            const TextSpan(text: ' 충전이야'),
                                           ],
                                         ),
                                       ),
@@ -239,23 +362,55 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       ),
                       const SizedBox(height: 12),
 
-                      // Mission Items
-                      MissionItem(
-                        title: '오늘 하루 3번 밥먹고 약먹기',
-                        isCompleted: true,
-                        completionCount: 1,
-                        totalCount: 3,
-                      ),
-                      const SizedBox(height: 6),
-                      MissionItem(
-                        title: '오늘 일기에 날씨 기록하기',
-                        isCompleted: false,
-                      ),
-                      const SizedBox(height: 6),
-                      MissionItem(
-                        title: '한끼 싹싹 비워서 다 먹기',
-                        isCompleted: true,
-                      ),
+                      // Mission Items or Completion Message
+                      if (_missionCompleted[0] && _missionCompleted[1] && _missionCompleted[2])
+                        Container(
+                          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFD966),
+                            borderRadius: BorderRadius.circular(50),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFFFA500).withValues(alpha: 0.6),
+                                blurRadius: 30,
+                                spreadRadius: 5,
+                                offset: const Offset(0, 0),
+                              ),
+                            ],
+                          ),
+                          child: const Center(
+                            child: Text(
+                              '오늘 할 일 모두 완료!',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF8B7355),
+                                fontFamily: 'OwnGlyph Meetme',
+                              ),
+                            ),
+                          ),
+                        )
+                      else ...[
+                        MissionItem(
+                          title: '오늘 하루 3번 밥먹고 약먹기',
+                          isCompleted: _missionCompleted[0],
+                          completionCount: _mealCount,
+                          totalCount: 3,
+                          onTap: _toggleMealMission,
+                        ),
+                        const SizedBox(height: 6),
+                        MissionItem(
+                          title: '오늘 일기에 날씨 기록하기',
+                          isCompleted: _missionCompleted[1],
+                          onTap: () => _toggleMission(1),
+                        ),
+                        const SizedBox(height: 6),
+                        MissionItem(
+                          title: '한끼 싹싹 비워서 다 먹기',
+                          isCompleted: _missionCompleted[2],
+                          onTap: () => _toggleMission(2),
+                        ),
+                      ],
                       const SizedBox(height: 120),
 
                       // Bear Character with Speech Bubble
@@ -306,11 +461,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       ),
                       const SizedBox(height: 24),
 
-                      // Search Bar
+                      // Search Bar (TextField)
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 20,
-                          vertical: 12,
+                          vertical: 4,
                         ),
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -320,21 +475,33 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                             width: 2,
                           ),
                         ),
-                        child: const Row(
+                        child: Row(
                           children: [
                             Expanded(
-                              child: Text(
-                                '곰이는 너가 궁금해!',
-                                style: TextStyle(
+                              child: TextField(
+                                controller: _searchController,
+                                decoration: InputDecoration(
+                                  hintText: '${UserService().teddyName}는 너가 궁금해!',
+                                  hintStyle: const TextStyle(
+                                    fontSize: 14,
+                                    color: Color(0xFFCCCCCC),
+                                    fontFamily: 'OwnGlyph Meetme',
+                                  ),
+                                  border: InputBorder.none,
+                                ),
+                                style: const TextStyle(
                                   fontSize: 14,
-                                  color: Color(0xFFCCCCCC),
                                   fontFamily: 'OwnGlyph Meetme',
                                 ),
+                                onSubmitted: (_) => _searchAndNavigateToChat(),
                               ),
                             ),
-                            Icon(
-                              Icons.search,
-                              color: Color(0xFFFFCC66),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.search,
+                                color: Color(0xFFFFCC66),
+                              ),
+                              onPressed: _searchAndNavigateToChat,
                             ),
                           ],
                         ),
@@ -344,68 +511,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     ),
                   ),
                 ),
-
                 // Bottom Navigation
-                Container(
-                  margin: const EdgeInsets.symmetric(vertical: 0, horizontal: 20),
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFD966),
-                    borderRadius: BorderRadius.circular(100),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      IconButton(
-                        icon: const Iconify(
-                            Mingcute.calendar_fill,
-                            size: 28,
-                            color: Color(0xFFFAA71B),
-                        ),
-                        color: Colors.white.withValues(alpha: 0.6),
-                        onPressed: () {},
-                      ),
-                      IconButton(
-                        icon: const Iconify(
-                          Ph.chat_circle_text_fill,
-                          size: 28,
-                          color: Color(0xFFFAA71B),
-                        ),
-                        color: Colors.white.withValues(alpha: 0.6),
-                        onPressed: () {},
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Iconify(
-                          Ri.home_6_fill,
-                          size: 28,
-                          color: Color(0xFFFF9933),
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Iconify(
-                            Ic.round_star,
-                            size: 28,
-                            color: Color(0xFFFAA71B)
-                        ),
-                        onPressed: () {},
-                      ),
-                      IconButton(
-                        icon: const Iconify(
-                          Ic.round_person,
-                          size: 28,
-                          color: Color(0xFFFAA71B)
-                        ),
-                        color: Colors.white.withValues(alpha: 0.6),
-                        onPressed: () {},
-                      ),
-                    ],
-                  ),
-                ),
+                const BottomNavBar(currentIndex: 2),
               ],
             ),
           ),
@@ -456,19 +563,19 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                   MoodButton(
                                     image: 'assets/images/happy_face.png',
                                     label: '기뻐!',
-                                    onTap: _onMoodSelected,
+                                    onTap: () => _onMoodSelected(0),
                                   ),
                                   Spacer(),
                                   MoodButton(
                                     image: 'assets/images/just_face.png',
                                     label: '보통이야',
-                                    onTap: _onMoodSelected,
+                                    onTap: () => _onMoodSelected(1),
                                   ),
                                   Spacer(),
                                   MoodButton(
                                     image: 'assets/images/sad_face.png',
                                     label: '별로야',
-                                    onTap: _onMoodSelected,
+                                    onTap: () => _onMoodSelected(2),
                                   ),
                                 ],
                               ),
@@ -492,6 +599,7 @@ class MissionItem extends StatelessWidget {
   final bool isCompleted;
   final int? completionCount;
   final int? totalCount;
+  final VoidCallback? onTap;
 
   const MissionItem({
     super.key,
@@ -499,56 +607,55 @@ class MissionItem extends StatelessWidget {
     required this.isCompleted,
     this.completionCount,
     this.totalCount,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFD966),
-        borderRadius: BorderRadius.circular(50),
-
-
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              title,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Color(0xFF8B7355),
-                fontFamily: 'OwnGlyph Meetme',
-              ),
-            ),
-          ),
-          if (completionCount != null && totalCount != null) ...[
-            Row(
-              children: List.generate(
-                totalCount!,
-                    (index) => Padding(
-                  padding: const EdgeInsets.only(left: 4),
-                  child: index < completionCount!
-                      ? Icon(
-                    Icons.check_circle,
-                    color: const Color(0xFFFF6B9D),
-                    size: 24,
-                  ) : Icon(
-                    Icons.circle,
-                    color: const Color(0xFFFFFFFF),
-                    size: 24,
-                  ),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFD966),
+          borderRadius: BorderRadius.circular(50),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Color(0xFF8B7355),
+                  fontFamily: 'OwnGlyph Meetme',
                 ),
               ),
             ),
-          ] else
-            Icon(
-              isCompleted ? Icons.check_circle : Icons.circle,
-              color: isCompleted ? const Color(0xFFFF0000) : const Color(0xFFFFFFFF),
-              size: 28,
-            ),
-        ],
+            if (completionCount != null && totalCount != null) ...[
+              Row(
+                children: List.generate(
+                  totalCount!,
+                      (index) => Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: Icon(
+                      index < completionCount! ? Icons.check_circle : Icons.circle,
+                      color: index < completionCount!
+                          ? const Color(0xFFFF8100)
+                          : const Color(0xFFFFFFFF),
+                      size: 24,
+                    ),
+                  ),
+                ),
+              ),
+            ] else
+              Icon(
+                isCompleted ? Icons.check_circle : Icons.circle,
+                color: isCompleted ? const Color(0xFFFF8100) : const Color(0xFFFFFFFF),
+                size: 28,
+              ),
+          ],
+        ),
       ),
     );
   }

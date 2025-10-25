@@ -33,7 +33,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           gradient: LinearGradient(
             begin: Alignment(0.50, -0.00),
             end: Alignment(0.50, 1.00),
-            colors: [Color(0xFFF9F9F9), Color(0xFFFFD966)],
+            colors: [Color(0xFFFFFFDD), Color(0xFFFFD966)],
           ),
         ),
         child: SafeArea(
@@ -49,7 +49,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                   // Sign Up Title
                   const Text(
-                    'Sign Up',
+                    '로그인',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.black,
@@ -80,7 +80,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         fontWeight: FontWeight.w500,
                       ),
                       decoration: InputDecoration(
-                        hintText: 'email',
+                        hintText: '이메일',
                         border: InputBorder.none,
                         contentPadding: EdgeInsets.symmetric(horizontal: 27, vertical: 12),
                       ),
@@ -109,7 +109,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         fontWeight: FontWeight.w500,
                       ),
                       decoration: InputDecoration(
-                        hintText: 'password',
+                        hintText: '비밀번호',
                         border: InputBorder.none,
                         contentPadding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                       ),
