@@ -16,7 +16,6 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Show splash for 2 seconds then navigate based on setup status
     Timer(const Duration(seconds: 2), () {
       if (mounted) {
         // 딥링크로 환자 정보가 있으면 Setup으로
@@ -35,7 +34,9 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Build a responsive approximation of the provided design
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -48,86 +49,60 @@ class _SplashScreenState extends State<SplashScreen> {
             colors: [Color(0xFFFFFFDD), Color(0xFFFFD966)],
           ),
         ),
-        child: Stack(
-          children: [
-            // Top status-like area (keeps spacing similar)
-            Positioned(
-              left: 9,
-              top: 0,
-              child: SizedBox(
-                width: 375,
-                height: 44,
-                child: Stack(children: [
-                  Positioned(
-                    left: 21,
-                    top: 12,
-                    child: Container(
-                      width: 54,
-                      height: 21,
-                      decoration: ShapeDecoration(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(32),
-                        ),
-                      ),
-                    ),
-                  ),
-                ]),
-              ),
-            ),
+        child: SafeArea(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Spacer(flex: 3),
 
-            // Main centered image
-            Positioned(
-              left: 80,
-              top: 499,
-              child: Container(
-                width: 313,
-                height: 313,
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage('assets/images/splash_teddy.png'),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-            ),
-
-            // Texts (approx positions from your snippet)
-            Positioned(
-              left: 129,
-              top: 327,
-              child: Text(
+              // Title texts
+              const Text(
                 '너만을 위한 작은곰돌이',
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Color(0xFFFAA71B),
                   fontSize: 20,
                   fontFamily: 'Ownglyph meetme',
                   fontWeight: FontWeight.w400,
                 ),
               ),
-            ),
-            Positioned(
-              left: 161,
-              top: 350,
-              child: Text(
+              const SizedBox(height: 8),
+              const Text(
                 '이로움',
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Color(0xFF505050),
                   fontSize: 40,
                   fontFamily: 'Ownglyph meetme',
                   fontWeight: FontWeight.w400,
                 ),
               ),
-            ),
 
-            // Bottom grabber
-            Positioned(
-              left: 129,
-              top: 834,
-              child: Container(
+              const Spacer(flex: 2),
+
+              // Main centered image
+              Container(
+                width: screenWidth * 0.7,
+                height: screenWidth * 0.7,
+                constraints: const BoxConstraints(
+                  maxWidth: 313,
+                  maxHeight: 313,
+                ),
+                decoration: const BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage('assets/images/splash_teddy.png'),
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+
+              const Spacer(flex: 3),
+
+              // Bottom indicator
+              Container(
                 width: 134,
                 height: 5,
+                margin: const EdgeInsets.only(bottom: 8),
                 decoration: ShapeDecoration(
                   color: Colors.black,
                   shape: RoundedRectangleBorder(
@@ -135,8 +110,8 @@ class _SplashScreenState extends State<SplashScreen> {
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

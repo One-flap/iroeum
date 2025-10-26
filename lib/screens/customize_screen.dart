@@ -56,9 +56,10 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
   }
 
   @override
-
-
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       extendBody: true,
       body: SafeArea(
@@ -66,429 +67,382 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
         top: false,
         child: Container(
           width: double.infinity,
-          clipBehavior: Clip.antiAlias,
           decoration: const BoxDecoration(color: Color(0xFFFFFFDD)),
-          child: Stack(
-            children: [
-              // Orange shadow card
-              Positioned(
-                left: 35,
-                top: 298.05,
-                child: Container(
-                  width: 326,
-                  height: 413,
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFFFAA71B),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(57),
-                    ),
-                  ),
-                ),
+          child: SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: screenHeight - MediaQuery.of(context).padding.bottom,
               ),
-              // Main white card
-              Positioned(
-                left: 34.78,
-                top: 298,
-                child: Container(
-                  width: 325.45,
-                  height: 413.07,
-                  decoration: ShapeDecoration(
-                    shadows: [
-                      BoxShadow(
-                        color: const Color(0xAAFF9B00),
-                        blurRadius: 20,
-                        offset: const Offset(0, 0),
-                        spreadRadius: 3,
-                      ),
-                    ],
-                    color: const Color(0xFFFFFFDD),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(57),
-                    ),
-                  ),
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: screenWidth * 0.05,
+                  vertical: 20,
                 ),
-              ),
-              // Info card
-              Positioned(
-                left: 156,
-                top: 98,
-                child: Container(
-                  width: 205,
-                  height: 95,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  decoration: ShapeDecoration(
-                    color: const Color(0x7FFFD966),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Text(
-                                '이름 : ${UserService().userName}',
-                                style: const TextStyle(
-                                  color: Color(0xFF505050),
-                                  fontSize: 14,
-                                  fontFamily: 'Ownglyph meetme',
-                                  fontWeight: FontWeight.w400,
-                                ),
-                                overflow: TextOverflow.ellipsis,
+                child: Column(
+                  children: [
+                    const SizedBox(height: 20),
+
+                    // Top section: Mood icon and Info card
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Mood icon (개발자 모드 트리거)
+                        GestureDetector(
+                          onLongPress: _resetApp,
+                          child: Container(
+                            width: screenWidth * 0.25,
+                            height: screenWidth * 0.24,
+                            constraints: const BoxConstraints(
+                              maxWidth: 99,
+                              maxHeight: 95,
+                            ),
+                            decoration: ShapeDecoration(
+                              color: const Color(0xFFFFEDB8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(24),
                               ),
-                              Text(
-                                '병원 : ${UserService().hospital}',
-                                style: const TextStyle(
-                                  color: Color(0xFF505050),
-                                  fontSize: 14,
-                                  fontFamily: 'Ownglyph meetme',
-                                  fontWeight: FontWeight.w400,
+                            ),
+                            child: Center(
+                              child: Image.asset(
+                                'assets/images/happy_face.png',
+                                width: screenWidth * 0.15,
+                                height: screenWidth * 0.14,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+
+                        // Info card
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            constraints: const BoxConstraints(
+                              maxWidth: 205,
+                              maxHeight: 95,
+                            ),
+                            decoration: ShapeDecoration(
+                              color: const Color(0x7FFFD966),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            '이름 : ${UserService().userName}',
+                                            style: const TextStyle(
+                                              color: Color(0xFF505050),
+                                              fontSize: 14,
+                                              fontFamily: 'Ownglyph meetme',
+                                              fontWeight: FontWeight.w400,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          Text(
+                                            '병원 : ${UserService().hospital}',
+                                            style: const TextStyle(
+                                              color: Color(0xFF505050),
+                                              fontSize: 14,
+                                              fontFamily: 'Ownglyph meetme',
+                                              fontWeight: FontWeight.w400,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            '나이 : ${UserService().userAge}세',
+                                            style: const TextStyle(
+                                              color: Color(0xFF505050),
+                                              fontSize: 14,
+                                              fontFamily: 'Ownglyph meetme',
+                                              fontWeight: FontWeight.w400,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          Text(
+                                            '아픈 곳 : ${UserService().disease}',
+                                            style: const TextStyle(
+                                              color: Color(0xFF505050),
+                                              fontSize: 14,
+                                              fontFamily: 'Ownglyph meetme',
+                                              fontWeight: FontWeight.w400,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                overflow: TextOverflow.ellipsis,
+                                const SizedBox(height: 4),
+                                Text(
+                                  '먹는약 : ${UserService().medications}',
+                                  style: const TextStyle(
+                                    color: Color(0xFF505050),
+                                    fontSize: 14,
+                                    fontFamily: 'Ownglyph meetme',
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    SizedBox(height: screenHeight * 0.05),
+
+                    // Progress section
+                    Column(
+                      children: [
+                        const Text(
+                          '이번 약은 30%나 완주 했어',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Color(0xFF505050),
+                            fontSize: 15,
+                            fontFamily: 'Ownglyph meetme',
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+
+                        // Progress bar
+                        Container(
+                          width: screenWidth * 0.75,
+                          constraints: const BoxConstraints(maxWidth: 280),
+                          child: Stack(
+                            children: [
+                              // Background
+                              InnerShadow(
+                                shadows: const [
+                                  Shadow(
+                                    color: Color(0xFFFF9B00),
+                                    blurRadius: 20,
+                                    offset: Offset(0, 0),
+                                  ),
+                                ],
+                                child: Container(
+                                  height: 29,
+                                  decoration: ShapeDecoration(
+                                    color: const Color(0xFFF9F9F9),
+                                    shape: RoundedRectangleBorder(
+                                      side: const BorderSide(
+                                        width: 3,
+                                        color: Color(0xFFFAA71B),
+                                      ),
+                                      borderRadius: BorderRadius.circular(12.50),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              // Fill
+                              TweenAnimationBuilder<double>(
+                                tween: Tween<double>(begin: 0, end: 0.3),
+                                duration: const Duration(seconds: 1),
+                                curve: Curves.easeOutCubic,
+                                builder: (context, value, child) {
+                                  return Container(
+                                    width: (screenWidth * 0.75 * value).clamp(0, 280 * 0.3),
+                                    height: 29,
+                                    decoration: ShapeDecoration(
+                                      color: const Color(0xFFFAA71B),
+                                      shape: RoundedRectangleBorder(
+                                        side: const BorderSide(
+                                          width: 2,
+                                          color: Color(0xFFFAA71B),
+                                        ),
+                                        borderRadius: BorderRadius.circular(12.50),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                              // Border
+                              Container(
+                                height: 29,
+                                decoration: ShapeDecoration(
+                                  shape: RoundedRectangleBorder(
+                                    side: const BorderSide(
+                                      width: 2,
+                                      color: Color(0xFFFFEDB8),
+                                    ),
+                                    borderRadius: BorderRadius.circular(12.50),
+                                  ),
+                                ),
                               ),
                             ],
                           ),
-                          const SizedBox(width: 20),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Text(
-                                '나이 : ${UserService().userAge}세',
-                                style: const TextStyle(
-                                  color: Color(0xFF505050),
-                                  fontSize: 14,
-                                  fontFamily: 'Ownglyph meetme',
-                                  fontWeight: FontWeight.w400,
-                                ),
-                                overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+
+                    SizedBox(height: screenHeight * 0.02),
+
+                    // Main card with teddy
+                    Container(
+                      width: screenWidth * 0.87,
+                      constraints: const BoxConstraints(maxWidth: 326),
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          // Orange shadow card
+                          Positioned(
+                            left: 1,
+                            top: 0.05,
+                            child: Container(
+                              width: screenWidth * 0.87,
+                              height: screenWidth * 1.1,
+                              constraints: const BoxConstraints(
+                                maxWidth: 326,
+                                maxHeight: 413,
                               ),
-                              Text(
-                                '아픈 곳 : ${UserService().disease}',
-                                style: const TextStyle(
-                                  color: Color(0xFF505050),
-                                  fontSize: 14,
-                                  fontFamily: 'Ownglyph meetme',
-                                  fontWeight: FontWeight.w400,
+                              decoration: ShapeDecoration(
+                                color: const Color(0xFFFAA71B),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(57),
                                 ),
-                                overflow: TextOverflow.ellipsis,
                               ),
-                            ],
+                            ),
+                          ),
+                          // Main white card
+                          Container(
+                            width: screenWidth * 0.87,
+                            height: screenWidth * 1.1,
+                            constraints: const BoxConstraints(
+                              maxWidth: 326,
+                              maxHeight: 413,
+                            ),
+                            decoration: ShapeDecoration(
+                              shadows: const [
+                                BoxShadow(
+                                  color: Color(0xAAFF9B00),
+                                  blurRadius: 20,
+                                  offset: Offset(0, 0),
+                                  spreadRadius: 3,
+                                ),
+                              ],
+                              color: const Color(0xFFFFFFDD),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(57),
+                              ),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 30),
+                                // Title
+                                const Text(
+                                  '너만의 곰이를 꾸며줘!',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Color(0xFF505050),
+                                    fontSize: 24,
+                                    fontFamily: 'Ownglyph meetme',
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+
+                                // Teddy bear with orange circle
+                                SizedBox(
+                                  width: screenWidth * 0.5,
+                                  height: screenWidth * 0.5,
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      // Orange circle shadow
+                                      Container(
+                                        width: screenWidth * 0.5,
+                                        height: screenWidth * 0.5,
+                                        constraints: const BoxConstraints(
+                                          maxWidth: 200,
+                                          maxHeight: 200,
+                                        ),
+                                        decoration: const ShapeDecoration(
+                                          shadows: [
+                                            BoxShadow(
+                                              color: Color(0x33FF9933),
+                                              blurRadius: 40,
+                                              offset: Offset(0, 4),
+                                              spreadRadius: 0,
+                                            ),
+                                          ],
+                                          shape: OvalBorder(),
+                                        ),
+                                      ),
+                                      // Teddy image
+                                      Image.asset(
+                                        'assets/images/idle_teddy.png',
+                                        width: screenWidth * 0.45,
+                                        height: screenWidth * 0.45,
+                                        fit: BoxFit.contain,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                const SizedBox(height: 30),
+
+                                // Customization options
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    _buildCustomOption(
+                                      'assets/images/cloth_icon.png',
+                                      '옷',
+                                      screenWidth,
+                                    ),
+                                    SizedBox(width: screenWidth * 0.08),
+                                    _buildCustomOption(
+                                      'assets/images/just_face.png',
+                                      '표정',
+                                      screenWidth,
+                                    ),
+                                    SizedBox(width: screenWidth * 0.08),
+                                    _buildCustomOption(
+                                      'assets/images/item_icon.png',
+                                      '아이템',
+                                      screenWidth,
+                                    ),
+                                  ],
+                                ),
+
+                                const SizedBox(height: 20),
+                              ],
+                            ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '먹는약 : ${UserService().medications}',
-                        style: const TextStyle(
-                          color: Color(0xFF505050),
-                          fontSize: 14,
-                          fontFamily: 'Ownglyph meetme',
-                          fontWeight: FontWeight.w400,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              // Title text
-              const Positioned(
-                left: 119,
-                top: 333.05,
-                child: Text(
-                  '너만의 곰이를 꾸며줘!',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Color(0xFF505050),
-                    fontSize: 24,
-                    fontFamily: 'Ownglyph meetme',
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ),
-              // Orange circle behind teddy
-              Positioned(
-                left: 97,
-                top: 404.05,
-                child: Container(
-                  width: 200,
-                  height: 200,
-                  decoration: const ShapeDecoration(
-                    shadows: [
-                      BoxShadow(
-                        color: Color(0x33FF9933),
-                        blurRadius: 40,
-                        offset: Offset(0, 4),
-                        spreadRadius: 0,
-                      ),
-                    ],
-                    shape: OvalBorder(),
-                  ),
-                ),
-              ),
-              // Teddy bear image
-              Positioned(
-                left: 107,
-                top: 381.05,
-                child: Container(
-                  width: 180,
-                  height: 180,
-                  decoration: const BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage('assets/images/idle_teddy.png'),
-                      fit: BoxFit.fill,
                     ),
-                  ),
-                ),
-              ),
-              // Customization options row
-              Positioned(
-                left: 86,
-                top: 628.05,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Column(
-                      children: [
-                        Container(
-                          width: 54,
-                          height: 54,
-                          decoration: const BoxDecoration(
-                            image: DecorationImage(
-                              image: AssetImage('assets/images/cloth_icon.png'),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 32),
-                        const SizedBox(
-                          width: 8,
-                          child: Text(
-                            '옷',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 15,
-                              fontFamily: 'Ownglyph meetme',
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(width: 32),
-                    Column(
-                      children: [
-                        Container(
-                          width: 57,
-                          height: 50,
-                          decoration: const BoxDecoration(
-                            image: DecorationImage(
-                              image: AssetImage('assets/images/just_face.png'),
-                              fit: BoxFit.fill,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 32),
-                        const Text(
-                          '표정',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 15,
-                            fontFamily: 'Ownglyph meetme',
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(width: 32),
-                    Column(
-                      children: [
-                        Container(
-                          width: 54,
-                          height: 54,
-                          decoration: const BoxDecoration(
-                            image: DecorationImage(
-                              image: AssetImage('assets/images/item_icon.png'),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 32),
-                        const Text(
-                          '아이템',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 15,
-                            fontFamily: 'Ownglyph meetme',
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              // Progress bar background
-              Positioned(
-                left: 52,
-                top: 234,
-                child: InnerShadow(
-                  shadows: [
-                    Shadow(
-                      color: const Color(0xFFFF9B00),
-                      blurRadius: 20,
-                      offset: const Offset(0, 0),
-                    ),
-                  ],
-                  child: Container(
-                    width: 280,
-                    height: 29,
-                    decoration: ShapeDecoration(
-                      color: const Color(0xFFF9F9F9),
-                      shape: RoundedRectangleBorder(
-                        side: const BorderSide(
-                          width: 3,
-                          color: Color(0xFFFAA71B),
-                        ),
-                        borderRadius: BorderRadius.circular(12.50),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              // Progress bar fill
-              Positioned(
-                left: 52,
-                top: 234,
-                child: TweenAnimationBuilder<double>(
-                  tween: Tween<double>(begin: 0, end: 117),
-                  duration: const Duration(seconds: 1),
-                  curve: Curves.easeOutCubic,
-                  builder: (context, value, child) {
-                    return Container(
-                      width: 117,
-                      height: 29,
-                      decoration: ShapeDecoration(
-                        color: const Color(0xFFFAA71B),
-                        shape: RoundedRectangleBorder(
-                          side: const BorderSide(
-                            width: 2,
-                            color: Color(0xFFFAA71B),
-                          ),
-                          borderRadius: BorderRadius.circular(12.50),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              // Progress bar border
-              Positioned(
-                left: 52,
-                top: 234,
-                child: Container(
-                  width: 277.24,
-                  height: 29,
-                  decoration: ShapeDecoration(
-                    shape: RoundedRectangleBorder(
-                      side: const BorderSide(
-                        width: 2,
-                        color: Color(0xFFFFEDB8),
-                      ),
-                      borderRadius: BorderRadius.circular(12.50),
-                    ),
-                  ),
-                ),
-              ),
 
-              // Progress text
-              const Positioned(
-                left: 59,
-                top: 211,
-                child: Text(
-                  '이번 약은 30%나 완주 했어',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Color(0xFF505050),
-                    fontSize: 15,
-                    fontFamily: 'Ownglyph meetme',
-                    fontWeight: FontWeight.w400,
-                  ),
+                    const SizedBox(height: 20),
+                  ],
                 ),
               ),
-              // Mood icon background
-              Positioned(
-                left: 42,
-                top: 98,
-                child: Container(
-                  width: 99,
-                  height: 95,
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFFFFEDB8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                  ),
-                ),
-              ),
-              // Settings icon placeholder
-              Positioned(
-                left: 334,
-                top: 56,
-                child: Container(
-                  width: 32,
-                  height: 28,
-                  child: Stack(
-                    children: [
-                      Positioned(
-                        left: 0,
-                        top: 0,
-                        child: Container(
-                          width: 32,
-                          height: 28,
-                          child: const Stack(),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              // Happy face icon (개발자 모드 트리거)
-              Positioned(
-                left: 61,
-                top: 118,
-                child: GestureDetector(
-                  onLongPress: _resetApp,
-                  child: Container(
-                    width: 61,
-                    height: 55,
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage('assets/images/happy_face.png'),
-                        fit: BoxFit.fill,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-        ), //wow
+        ),
       ),
       bottomNavigationBar: const SafeArea(
         top: false,
@@ -497,6 +451,31 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
           child: BottomNavBar(currentIndex: 4),
         ),
       ),
+    );
+  }
+
+  Widget _buildCustomOption(String imagePath, String label, double screenWidth) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Image.asset(
+          imagePath,
+          width: screenWidth * 0.14,
+          height: screenWidth * 0.14,
+          fit: BoxFit.contain,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Colors.black,
+            fontSize: 15,
+            fontFamily: 'Ownglyph meetme',
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+      ],
     );
   }
 }
