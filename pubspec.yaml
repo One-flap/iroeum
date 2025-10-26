@@ -47,6 +47,8 @@ dependencies:
   flutter_inner_shadow: ^0.0.1
   flutter_launcher_icons: ^0.14.4
   nfc_manager: ^4.0.2
+  app_links: ^6.4.1
+  mobile_scanner: ^5.2.3
 
 dev_dependencies:
   flutter_test:

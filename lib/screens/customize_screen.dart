@@ -146,9 +146,9 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              const Text(
-                                '병원 : 조지병원',
-                                style: TextStyle(
+                              Text(
+                                '병원 : ${UserService().hospital}',
+                                style: const TextStyle(
                                   color: Color(0xFF505050),
                                   fontSize: 14,
                                   fontFamily: 'Ownglyph meetme',
@@ -162,9 +162,9 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
                           Column(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              const Text(
-                                '나이 : 8세',
-                                style: TextStyle(
+                              Text(
+                                '나이 : ${UserService().userAge}세',
+                                style: const TextStyle(
                                   color: Color(0xFF505050),
                                   fontSize: 14,
                                   fontFamily: 'Ownglyph meetme',
@@ -172,9 +172,9 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              const Text(
-                                '아픈 곳 : 백혈구',
-                                style: TextStyle(
+                              Text(
+                                '아픈 곳 : ${UserService().disease}',
+                                style: const TextStyle(
                                   color: Color(0xFF505050),
                                   fontSize: 14,
                                   fontFamily: 'Ownglyph meetme',
@@ -187,9 +187,9 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
                         ],
                       ),
                       const SizedBox(height: 2),
-                      const Text(
-                        '먹는약 : 항암제, 진통제',
-                        style: TextStyle(
+                      Text(
+                        '먹는약 : ${UserService().medications}',
+                        style: const TextStyle(
                           color: Color(0xFF505050),
                           fontSize: 14,
                           fontFamily: 'Ownglyph meetme',

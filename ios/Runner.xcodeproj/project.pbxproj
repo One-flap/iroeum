@@ -105,7 +105,6 @@
 				345D6C28E6F0EF49C0549D6E /* Pods-RunnerTests.release.xcconfig */,
 				8BA1E01E1364131948D33E18 /* Pods-RunnerTests.profile.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -498,6 +497,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.herome.herome;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -704,6 +704,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.herome.herome;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";

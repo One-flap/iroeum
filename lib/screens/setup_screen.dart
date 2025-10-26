@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../services/user_service.dart';
+import '../services/deep_link_service.dart';
 
 class SetupScreen extends StatefulWidget {
   const SetupScreen({Key? key}) : super(key: key);
@@ -26,12 +27,20 @@ class _SetupScreenState extends State<SetupScreen>
   bool _isInputMode = false;
   String _teddyName = '';
   String _userName = '';
+  bool _hasPatientData = false;
   final TextEditingController _textController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
+
+    // NFC/딥링크로 환자 정보가 있는지 확인
+    final patientData = DeepLinkService().patientData;
+    if (patientData != null) {
+      _hasPatientData = true;
+      _userName = patientData['name'] ?? '';
+    }
 
     // Grass slide up animation
     _grassController = AnimationController(
@@ -123,6 +132,29 @@ class _SetupScreenState extends State<SetupScreen>
           _textController.clear();
         });
         _focusNode.unfocus();
+
+        // 환자 정보가 이미 있으면 바로 저장하고 Home으로 이동
+        if (_hasPatientData) {
+          final patientData = DeepLinkService().patientData;
+          await UserService().saveUserData(
+            _teddyName,
+            _userName,
+            age: patientData?['age'],
+            hospital: patientData?['hospital'],
+            disease: patientData?['disease'],
+            medications: patientData?['medications'],
+          );
+
+          // 환자 데이터 초기화
+          DeepLinkService().clearPatientData();
+
+          // Home으로 이동
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (mounted) {
+              context.go('/');
+            }
+          });
+        }
       } else {
         // 두 번째 입력: 사용자 이름, Home으로 이동
         setState(() {
@@ -157,9 +189,11 @@ class _SetupScreenState extends State<SetupScreen>
 
   String get _bubbleText {
     if (_teddyName.isEmpty) {
-      return '내 이름을 지어줘!';
+      return _hasPatientData
+          ? '$_userName아, 내 이름을 지어줘!'
+          : '내 이름을 지어줘!';
     } else {
-      return '너 이름은 뭐야?';
+      return _hasPatientData ? '잘 부탁해!' : '너 이름은 뭐야?';
     }
   }
 

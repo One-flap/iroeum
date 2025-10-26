@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'router/app_router.dart';
 import 'services/user_service.dart';
+import 'services/deep_link_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -9,6 +10,9 @@ Future<void> main() async {
 
   // 사용자 데이터 로드
   await UserService().loadUserData();
+
+  // 딥링크 서비스 초기화
+  await DeepLinkService().initialize();
 
   runApp(const MyApp());
 }
