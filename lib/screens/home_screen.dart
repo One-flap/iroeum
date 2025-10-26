@@ -314,30 +314,37 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                                 ),
                                               ),
                                             ),
-                                            // 진행 바
-                                            FractionallySizedBox(
-                                              alignment: Alignment.centerLeft,
-                                              widthFactor: 0.8, // 진행률 조정
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                  borderRadius: BorderRadius.circular(50),
-                                                  gradient: const LinearGradient(
-                                                    colors: [
-                                                      Color(0xFFFFB627),
-                                                      Color(0xFFFFA41B),
-                                                    ],
-                                                    begin: Alignment.centerLeft,
-                                                    end: Alignment.centerRight,
-                                                  ),
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: const Color(0xFFFFD580).withOpacity(0.6),
-                                                      blurRadius: 10,
-                                                      offset: const Offset(0, 0),
+                                            // 진행 바 (애니메이션 추가)
+                                            TweenAnimationBuilder<double>(
+                                              tween: Tween<double>(begin: 0.0, end: 0.8),
+                                              duration: const Duration(milliseconds: 1200),
+                                              curve: Curves.easeOutCubic,
+                                              builder: (context, value, child) {
+                                                return FractionallySizedBox(
+                                                  alignment: Alignment.centerLeft,
+                                                  widthFactor: value, // 애니메이션 진행률
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                      borderRadius: BorderRadius.circular(50),
+                                                      gradient: const LinearGradient(
+                                                        colors: [
+                                                          Color(0xFFFFB627),
+                                                          Color(0xFFFFA41B),
+                                                        ],
+                                                        begin: Alignment.centerLeft,
+                                                        end: Alignment.centerRight,
+                                                      ),
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                          color: const Color(0xFFFFD580).withOpacity(0.6),
+                                                          blurRadius: 10,
+                                                          offset: const Offset(0, 0),
+                                                        ),
+                                                      ],
                                                     ),
-                                                  ],
-                                                ),
-                                              ),
+                                                  ),
+                                                );
+                                              },
                                             ),
                                           ],
                                         ),

@@ -322,15 +322,22 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   ),
                 ),
               ),
-              // 진행 바
-              FractionallySizedBox(
-                widthFactor: percentage / 100,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
+              // 진행 바 (애니메이션 추가)
+              TweenAnimationBuilder<double>(
+                tween: Tween<double>(begin: 0.0, end: percentage / 100),
+                duration: const Duration(milliseconds: 1200),
+                curve: Curves.easeOutCubic,
+                builder: (context, value, child) {
+                  return FractionallySizedBox(
+                    widthFactor: value,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: color,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                  );
+                },
               ),
             ],
           ),
