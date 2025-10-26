@@ -545,6 +545,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             AnimatedBuilder(
               animation: _animationController,
               builder: (context, child) {
+                final screenWidth = MediaQuery.of(context).size.width;
+
                 return Opacity(
                   opacity: _fadeAnimation.value,
                   child: Container(
@@ -553,8 +555,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       child: Transform.scale(
                         scale: _scaleAnimation.value,
                         child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 40),
-                          padding: const EdgeInsets.all(30),
+                          margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.1),
+                          padding: EdgeInsets.all(screenWidth * 0.08),
+                          constraints: const BoxConstraints(
+                            maxWidth: 400,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFFFE8B8),
                             borderRadius: BorderRadius.circular(30),
@@ -570,35 +575,41 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Text(
+                              Text(
                                 '오늘 너의 기분은?',
                                 style: TextStyle(
-                                  fontSize: 22,
+                                  fontSize: screenWidth * 0.055,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF505050),
+                                  color: const Color(0xFF505050),
                                   fontFamily: 'OwnGlyph Meetme',
                                 ),
                               ),
-                              const SizedBox(height: 30),
+                              SizedBox(height: screenWidth * 0.08),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                 children: [
-                                  MoodButton(
-                                    image: 'assets/images/happy_face.png',
-                                    label: '기뻐!',
-                                    onTap: () => _onMoodSelected(0),
+                                  Expanded(
+                                    child: MoodButton(
+                                      image: 'assets/images/happy_face.png',
+                                      label: '기뻐!',
+                                      onTap: () => _onMoodSelected(0),
+                                    ),
                                   ),
-                                  Spacer(),
-                                  MoodButton(
-                                    image: 'assets/images/just_face.png',
-                                    label: '보통이야',
-                                    onTap: () => _onMoodSelected(1),
+                                  SizedBox(width: screenWidth * 0.02),
+                                  Expanded(
+                                    child: MoodButton(
+                                      image: 'assets/images/just_face.png',
+                                      label: '보통이야',
+                                      onTap: () => _onMoodSelected(1),
+                                    ),
                                   ),
-                                  Spacer(),
-                                  MoodButton(
-                                    image: 'assets/images/sad_face.png',
-                                    label: '별로야',
-                                    onTap: () => _onMoodSelected(2),
+                                  SizedBox(width: screenWidth * 0.02),
+                                  Expanded(
+                                    child: MoodButton(
+                                      image: 'assets/images/sad_face.png',
+                                      label: '별로야',
+                                      onTap: () => _onMoodSelected(2),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -698,14 +709,19 @@ class MoodButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final buttonSize = (screenWidth * 0.2).clamp(60.0, 80.0);
+    final imageSize = (buttonSize * 0.6).clamp(36.0, 48.0);
+
     return GestureDetector(
       onTap: onTap,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
+            width: buttonSize,
+            height: buttonSize,
+            decoration: const BoxDecoration(
               gradient: RadialGradient(
                 center: Alignment.center,
                 radius: 0.5,
@@ -720,19 +736,21 @@ class MoodButton extends StatelessWidget {
             child: Center(
               child: Image.asset(
                 image,
-                width: 48,
-                height: 48,
+                width: imageSize,
+                height: imageSize,
+                fit: BoxFit.contain,
               ),
             ),
           ),
           const SizedBox(height: 8),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Color(0xFF505050),
+            style: TextStyle(
+              fontSize: (screenWidth * 0.035).clamp(12.0, 14.0),
+              color: const Color(0xFF505050),
               fontFamily: 'OwnGlyph Meetme',
             ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),

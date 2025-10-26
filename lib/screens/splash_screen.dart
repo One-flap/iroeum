@@ -16,20 +16,37 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Timer(const Duration(seconds: 2), () {
+    _navigateAfterDelay();
+  }
+
+  Future<void> _navigateAfterDelay() async {
+    // 최소 2초 대기
+    await Future.delayed(const Duration(seconds: 2));
+
+    // 딥링크 처리를 위해 추가로 조금 더 대기 (최대 500ms)
+    int attempts = 0;
+    while (attempts < 5) {
+      await Future.delayed(const Duration(milliseconds: 100));
+
       if (mounted) {
         // 딥링크로 환자 정보가 있으면 Setup으로
         if (DeepLinkService().patientData != null) {
           context.go('/setup');
-        }
-        // setup이 완료되지 않았으면 signup으로, 완료되었으면 home으로
-        else if (UserService().isSetupComplete) {
-          context.go('/');
-        } else {
-          context.go('/signup');
+          return;
         }
       }
-    });
+
+      attempts++;
+    }
+
+    // 딥링크가 없으면 기존 로직
+    if (mounted) {
+      if (UserService().isSetupComplete) {
+        context.go('/');
+      } else {
+        context.go('/signup');
+      }
+    }
   }
 
   @override
@@ -97,19 +114,6 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
 
               const Spacer(flex: 3),
-
-              // Bottom indicator
-              Container(
-                width: 134,
-                height: 5,
-                margin: const EdgeInsets.only(bottom: 8),
-                decoration: ShapeDecoration(
-                  color: Colors.black,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(100),
-                  ),
-                ),
-              ),
             ],
           ),
         ),
