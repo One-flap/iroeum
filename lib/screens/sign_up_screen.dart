@@ -207,6 +207,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => Scaffold(
+          backgroundColor: const Color(0xFFFFFFDD),
           appBar: AppBar(
             title: const Text(
               'QR 코드 스캔',
