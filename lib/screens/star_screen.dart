@@ -91,6 +91,10 @@ class _StarScreenState extends State<StarScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFFFDD),
+      bottomNavigationBar: const Padding(
+        padding: EdgeInsets.only(bottom: 35),
+        child: BottomNavBar(currentIndex: 3),
+      ),
       body: Stack(
         children: [
           // 스크롤 가능한 콘텐츠
@@ -139,10 +143,10 @@ class _StarScreenState extends State<StarScreen> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 20,
-                            vertical: 16,
+                            vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: const Color(0xFFFFF6CB),
                             borderRadius: BorderRadius.circular(30),
                             border: Border.all(
                               color: const Color(0xFFFAA71B),
@@ -170,12 +174,12 @@ class _StarScreenState extends State<StarScreen> {
                                   setState(() {});
                                 },
                                 child: Container(
-                                  width: 28,
-                                  height: 28,
+                                  width: 22,
+                                  height: 22,
                                   decoration: BoxDecoration(
                                     color: bucket.isCompleted
                                         ? const Color(0xFFFAA71B)
-                                        : Colors.white,
+                                        : Color(0xFFFFF6CB),
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
                                       color: const Color(0xFFFAA71B),
@@ -186,7 +190,7 @@ class _StarScreenState extends State<StarScreen> {
                                       ? const Icon(
                                           Icons.check,
                                           color: Colors.white,
-                                          size: 20,
+                                          size: 18,
                                         )
                                       : null,
                                 ),
@@ -220,24 +224,18 @@ class _StarScreenState extends State<StarScreen> {
                   ),
 
                   // Draw UI Image - 화면 폭에 맞춤
-                  Image.asset(
-                    'assets/images/drawui.png',
-                    width: double.infinity,
-                    fit: BoxFit.fitWidth,
+                  Padding(padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Image.asset(
+                      'assets/images/drawui.png',
+                      width: double.infinity,
+                      fit: BoxFit.fitWidth,
+                    ),
                   ),
 
                   const SizedBox(height: 12),
                 ],
               ),
             ),
-          ),
-
-          // 네비게이션 바 - 바닥에서 살짝 띄워서 상단에 고정
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 20,
-            child: const BottomNavBar(currentIndex: 3),
           ),
         ],
       ),

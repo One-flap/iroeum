@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:iconify_flutter/iconify_flutter.dart';
-import 'package:iconify_flutter/icons/ph.dart';
-import 'package:iconify_flutter/icons/ri.dart';
-import 'package:iconify_flutter/icons/mingcute.dart';
-import 'package:iconify_flutter/icons/ic.dart';
+import 'package:flutter_inner_shadow/flutter_inner_shadow.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'customize_screen.dart';
 import '../widgets/bottom_nav_bar.dart';
 import '../services/user_service.dart';
+import '../services/mission_service.dart';
 
 
 // main.dart
@@ -39,8 +36,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'idk what to do',
       theme: ThemeData(
+        useMaterial3: false,
         fontFamily: 'OwnGlyph Meetme',
-        scaffoldBackgroundColor: const Color(0xFFFFFFDD),
+        scaffoldBackgroundColor: const Color.fromARGB(255, 255, 255, 221),
       ),
       routerConfig: _router,
       debugShowCheckedModeBanner: false,
@@ -93,6 +91,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
     _checkMoodBoxStatus();
     _loadMissionStatus();
+    MissionService().loadMissions(); // 커스텀 미션 로드
   }
 
   // 미션 상태 불러오기
@@ -227,16 +226,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 Expanded(
                   child: SingleChildScrollView(
                     child: Padding(
-                      padding: const EdgeInsets.all(20.0),
+                      padding: const EdgeInsets.all(40.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                       // Progress Card
                       Container(
-                        padding: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.fromLTRB(0, 10, 14, 10),
                         decoration: BoxDecoration(
                           color: const Color(0xFFFFEBB1),
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(24),
                         ),
                         child: Column(
                           children: [
@@ -247,7 +246,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                   width: 100,
                                   height: 100,
                                 ),
-                                const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -255,12 +253,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                       RichText(
                                         text: TextSpan(
                                           style: const TextStyle(
-                                            fontSize: 18,
-                                            color: Color(0xFF8B7355),
+                                            fontSize: 17,
+                                            color: Color(0xFF505050),
                                             fontFamily: 'OwnGlyph Meetme',
                                           ),
                                           children: [
-                                            TextSpan(text: '안녕 ${UserService().userName}! 오늘은 용기 '),
+                                            TextSpan(text: '안녕! ${UserService().userName} 오늘은 용기 '),
                                             const TextSpan(
                                               text: '80%',
                                               style: TextStyle(
@@ -272,7 +270,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                           ],
                                         ),
                                       ),
-                                      const SizedBox(height: 12),
+                                      const SizedBox(height: 10),
                                       Container(
                                         height: 18,
                                         decoration: BoxDecoration(
@@ -290,16 +288,29 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                         child: Stack(
                                           children: [
                                             // 배경 (테두리 느낌)
-                                            Container(
-                                              decoration: BoxDecoration(
-                                                borderRadius: BorderRadius.circular(50),
-                                                gradient: const LinearGradient(
-                                                  colors: [
-                                                    Color(0xFFFFF7E0),
-                                                    Color(0xFFFFEFB3),
-                                                  ],
-                                                  begin: Alignment.topLeft,
-                                                  end: Alignment.bottomRight,
+                                            InnerShadow(
+                                              shadows: [
+                                                Shadow(
+                                                  color: const Color(0xFFFFA400).withOpacity(0.6),
+                                                  offset: const Offset(0, 0),
+                                                  blurRadius: 8,
+                                                ),
+                                              ],
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  borderRadius: BorderRadius.circular(50),
+                                                  border: Border.all(
+                                                    color: const Color(0xFFFFEDB8),
+                                                    width: 5,
+                                                  ),
+                                                  gradient: const LinearGradient(
+                                                    colors: [
+                                                      Color(0xFFFFF7E0),
+                                                      Color(0xFFFFEFB3),
+                                                    ],
+                                                    begin: Alignment.topLeft,
+                                                    end: Alignment.bottomRight,
+                                                  ),
                                                 ),
                                               ),
                                             ),
@@ -331,12 +342,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                           ],
                                         ),
                                       ),
-                                      const SizedBox(height: 16),
+                                      const SizedBox(height: 10),
                                       const Text(
                                         '" 오늘은 집 가기까지 7일 남았어!"',
                                         style: TextStyle(
-                                          fontSize: 16,
-                                          color: Color(0xFF8B7355),
+                                          fontSize: 17,
+                                          color: Color(0xFF505050),
                                           fontFamily: 'OwnGlyph Meetme',
                                         ),
                                       ),
@@ -356,11 +367,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF8B7355),
+                          color: Color(0xFF505050),
                           fontFamily: 'OwnGlyph Meetme',
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 3),
 
                       // Mission Items or Completion Message
                       if (_missionCompleted[0] && _missionCompleted[1] && _missionCompleted[2])
@@ -384,7 +395,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF8B7355),
+                                color: Color(0xFF505050),
                                 fontFamily: 'OwnGlyph Meetme',
                               ),
                             ),
@@ -410,6 +421,20 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           isCompleted: _missionCompleted[2],
                           onTap: () => _toggleMission(2),
                         ),
+                        // 커스텀 미션 추가
+                        ...MissionService().todayMissions.map((mission) {
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: MissionItem(
+                              title: mission.title,
+                              isCompleted: mission.isCompleted,
+                              onTap: () async {
+                                await MissionService().toggleMission(mission.id);
+                                setState(() {});
+                              },
+                            ),
+                          );
+                        }).toList(),
                       ],
                       const SizedBox(height: 120),
 
@@ -419,7 +444,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           clipBehavior: Clip.none,
                           children: [
                             Image.asset(
-                              'assets/images/home_teddy.png',
+                              'assets/images/home_teddy_green.png',
                               width: 600,
                               height: 250,
                             ),
@@ -445,8 +470,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                           '오늘 뭐했어??',
                                           style: TextStyle(
                                             fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xFF8B7355),
+                                            color: Color(0xFF505050),
                                             fontFamily: 'OwnGlyph Meetme',
                                           ),
                                         ),
@@ -459,13 +483,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           ],
                         ),
                       ),
-                      const SizedBox(height: 24),
 
                       // Search Bar (TextField)
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 20,
-                          vertical: 4,
+                          vertical: 0,
                         ),
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -483,14 +506,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                 decoration: InputDecoration(
                                   hintText: '${UserService().teddyName}는 너가 궁금해!',
                                   hintStyle: const TextStyle(
-                                    fontSize: 14,
-                                    color: Color(0xFFCCCCCC),
+                                    fontSize: 12,
+                                    color: Color(0xFF828282),
                                     fontFamily: 'OwnGlyph Meetme',
                                   ),
                                   border: InputBorder.none,
                                 ),
                                 style: const TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 12,
                                   fontFamily: 'OwnGlyph Meetme',
                                 ),
                                 onSubmitted: (_) => _searchAndNavigateToChat(),
@@ -552,7 +575,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                                 style: TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF8B7355),
+                                  color: Color(0xFF505050),
                                   fontFamily: 'OwnGlyph Meetme',
                                 ),
                               ),
@@ -627,7 +650,7 @@ class MissionItem extends StatelessWidget {
                 title,
                 style: const TextStyle(
                   fontSize: 16,
-                  color: Color(0xFF8B7355),
+                  color: Color(0xFF505050),
                   fontFamily: 'OwnGlyph Meetme',
                 ),
               ),
@@ -652,7 +675,7 @@ class MissionItem extends StatelessWidget {
               Icon(
                 isCompleted ? Icons.check_circle : Icons.circle,
                 color: isCompleted ? const Color(0xFFFF8100) : const Color(0xFFFFFFFF),
-                size: 28,
+                size: 24,
               ),
           ],
         ),
@@ -707,7 +730,7 @@ class MoodButton extends StatelessWidget {
             label,
             style: const TextStyle(
               fontSize: 14,
-              color: Color(0xFF8B7355),
+              color: Color(0xFF505050),
               fontFamily: 'OwnGlyph Meetme',
             ),
           ),

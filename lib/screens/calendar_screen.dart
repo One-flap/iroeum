@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/bottom_nav_bar.dart';
+import 'package:flutter_inner_shadow/flutter_inner_shadow.dart';
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
@@ -20,6 +21,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   // 기분 데이터 불러오기
+
   Future<void> _loadMoodData() async {
     final prefs = await SharedPreferences.getInstance();
     final keys = prefs.getKeys();
@@ -300,11 +302,27 @@ class _CalendarScreenState extends State<CalendarScreen> {
         Container(
           height: 40,
           decoration: BoxDecoration(
-            color: Colors.white,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Stack(
             children: [
+              // 흰색 배경
+              InnerShadow(
+                shadows: [
+                  Shadow(
+                    color: Color(0xFFFFC100),
+                    offset: const Offset(0, 0),
+                    blurRadius: 20,
+                  ),
+                ],
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+              ),
+              // 진행 바
               FractionallySizedBox(
                 widthFactor: percentage / 100,
                 child: Container(

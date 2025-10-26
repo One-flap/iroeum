@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_svg/flutter_svg.dart';
+
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:permission_handler/permission_handler.dart';
-import '../widgets/bottom_nav_bar.dart';
 import '../services/user_service.dart';
 import '../services/bucket_service.dart';
+import '../services/mission_service.dart';
 
 class ChatScreen extends StatefulWidget {
   final String? initialQuery;
@@ -25,7 +27,6 @@ class _ChatScreenState extends State<ChatScreen> {
   final ScrollController _scrollController = ScrollController();
   final List<ChatMessage> _messages = [];
   bool _isLoading = false;
-  String _currentDate = '';
 
   // 음성 인식 관련
   late stt.SpeechToText _speech;
@@ -63,17 +64,7 @@ class _ChatScreenState extends State<ChatScreen> {
       setState(() {
         _messages.addAll([
           ChatMessage(
-            text: '$userName!',
-            isUser: false,
-            timestamp: DateTime.now().subtract(const Duration(minutes: 11)),
-          ),
-          ChatMessage(
-            text: '안녕 오늘 잘자',
-            isUser: false,
-            timestamp: DateTime.now().subtract(const Duration(minutes: 11)),
-          ),
-          ChatMessage(
-            text: '좋은 하루 보내구',
+            text: '$userName아, 안녕! 나는 ${UserService().teddyName}야! 만나서 반가워! 😊',
             isUser: false,
             timestamp: DateTime.now().subtract(const Duration(minutes: 11)),
           ),
@@ -228,7 +219,7 @@ class _ChatScreenState extends State<ChatScreen> {
         'messages': [
           {
             'role': 'system',
-            'content': '너는 "$teddyName"라는 이름의 따뜻하고 친근한 AI 친구야. 8세 아이 $userName이와 대화하고 있어. 항상 밝고 긍정적이며, 아이의 건강과 치료를 응원해줘. 짧고 간단하게 대답하고, 이모지를 적절히 사용해서 친근하게 말해줘. $userName이가 하고 싶은 일이나 버킷리스트를 말하면, add_bucket_item 함수를 사용해서 버킷리스트에 추가해줘.'
+            'content': '너는 "$teddyName"라는 이름의 따뜻하고 친근한 AI 친구야. 8세 아이 $userName이와 대화하고 있어. 항상 밝고 긍정적이며, 아이의 건강과 치료를 응원해줘. 짧고 간단하게 대답하고, 이모지를 적절히 사용해서 친근하게 말해줘. $userName이가 하고 싶은 일이나 버킷리스트를 말하면 add_bucket_item 함수를 사용하고, "나 ~해야해", "~해야 돼", "~할 거야" 같이 오늘 할 일을 말하면 add_mission 함수를 사용해서 오늘의 미션에 추가해줘.'
           },
           ...conversationHistory,
           {
@@ -241,13 +232,30 @@ class _ChatScreenState extends State<ChatScreen> {
             'type': 'function',
             'function': {
               'name': 'add_bucket_item',
-              'description': '사용자의 버킷리스트에 새로운 항목을 추가합니다. 사용자가 하고 싶은 일이나 목표를 말하면 이 함수를 호출하세요.',
+              'description': '사용자의 버킷리스트에 새로운 항목을 추가합니다. 사용자가 하고 싶은 일이나 장기적인 목표를 말하면 이 함수를 호출하세요.',
               'parameters': {
                 'type': 'object',
                 'properties': {
                   'title': {
                     'type': 'string',
                     'description': '버킷리스트 항목의 제목'
+                  }
+                },
+                'required': ['title']
+              }
+            }
+          },
+          {
+            'type': 'function',
+            'function': {
+              'name': 'add_mission',
+              'description': '오늘의 할 일 목록에 새로운 미션을 추가합니다. 사용자가 "나 ~해야해", "~해야 돼", "~할 거야" 같이 오늘 할 일을 말하면 이 함수를 호출하세요.',
+              'parameters': {
+                'type': 'object',
+                'properties': {
+                  'title': {
+                    'type': 'string',
+                    'description': '오늘 할 일 항목의 제목'
                   }
                 },
                 'required': ['title']
@@ -278,6 +286,14 @@ class _ChatScreenState extends State<ChatScreen> {
           await BucketService().addBucket(title);
 
           return '좋아! "$title" 를 버킷리스트에 추가했어! 꼭 이루자! 💪✨';
+        } else if (functionName == 'add_mission') {
+          final arguments = jsonDecode(toolCall['function']['arguments']);
+          final title = arguments['title'] as String;
+
+          // 오늘의 미션에 추가
+          await MissionService().addMission(title);
+
+          return '알겠어! "$title" 를 오늘의 미션에 추가했어! 화이팅! 🎯💫';
         }
       }
 
@@ -302,170 +318,185 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFFFDD),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: const BoxDecoration(
-                color: Color(0xFFFFEDB8),
-              ),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Color(0xFF8B7355)),
-                    onPressed: () => context.go('/'),
-                  ),
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: const Color(0xFFFFD699),
+      backgroundColor: Colors.transparent,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment(0, 0.6),
+            end: Alignment(0, 1.4),
+            colors: [Color(0xFFFFFFDD), Color(0xFFFFD966)],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Header
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFFEDB8),
+                ),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Color(0xFF8B7355)),
+                      onPressed: () => context.go('/'),
                     ),
-                    child: Center(
-                      child: Image.asset(
-                        'assets/images/just_face.png',
-                        width: 30,
-                        height: 30,
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: const Color(0xFFFFD699),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          UserService().teddyName,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF8B7355),
-                            fontFamily: 'Ownglyph meetme',
-                          ),
-                        ),
-                        Text(
-                          'chat ${_getTimeAgo()}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF8B7355),
-                            fontFamily: 'Ownglyph meetme',
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFAA71B),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.menu,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Messages
-            Expanded(
-              child: ListView.builder(
-                controller: _scrollController,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                itemCount: _messages.length + (_isLoading ? 1 : 0),
-                itemBuilder: (context, index) {
-                  if (index == _messages.length && _isLoading) {
-                    return _buildBearMessage('...', null);
-                  }
-                  final message = _messages[index];
-
-                  // 날짜 구분선 표시
-                  Widget? dateSeparator;
-                  if (index == 0 || !_isSameDay(_messages[index - 1].timestamp, message.timestamp)) {
-                    dateSeparator = Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
                       child: Center(
-                        child: Text(
-                          _formatDateSeparator(message.timestamp),
-                          style: const TextStyle(
-                            color: Color(0xFF999999),
-                            fontSize: 12,
-                            fontFamily: 'Ownglyph meetme',
-                          ),
+                        child: Image.asset(
+                          'assets/images/just_face.png',
+                          width: 30,
+                          height: 30,
                         ),
                       ),
-                    );
-                  }
-
-                  return Column(
-                    children: [
-                      if (dateSeparator != null) dateSeparator,
-                      message.isUser
-                          ? _buildUserMessage(message.text, message.timestamp)
-                          : _buildBearMessage(message.text, message.timestamp),
-                    ],
-                  );
-                },
-              ),
-            ),
-
-            // Input field
-            Container(
-              margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(30),
-                border: Border.all(
-                  color: const Color(0xFFFAA71B),
-                  width: 2,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            UserService().teddyName,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF8B7355),
+                              fontFamily: 'Ownglyph meetme',
+                            ),
+                          ),
+                          Text(
+                            'chat ${_getTimeAgo()}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF8B7355),
+                              fontFamily: 'Ownglyph meetme',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFAA71B),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.menu,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _messageController,
-                      decoration: const InputDecoration(
-                        hintText: '대화 하기',
-                        hintStyle: TextStyle(
-                          color: Color(0xFFCCCCCC),
+
+              // Messages
+              Expanded(
+                child: ListView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  itemCount: _messages.length + (_isLoading ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (index == _messages.length && _isLoading) {
+                      return _buildBearMessage('...', null);
+                    }
+                    final message = _messages[index];
+
+                    // 날짜 구분선 표시
+                    Widget? dateSeparator;
+                    if (index == 0 || !_isSameDay(_messages[index - 1].timestamp, message.timestamp)) {
+                      dateSeparator = Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Center(
+                          child: Text(
+                            _formatDateSeparator(message.timestamp),
+                            style: const TextStyle(
+                              color: Color(0xFF999999),
+                              fontSize: 12,
+                              fontFamily: 'Ownglyph meetme',
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+
+                    return Column(
+                      children: [
+                        if (dateSeparator != null) dateSeparator,
+                        message.isUser
+                            ? _buildUserMessage(message.text, message.timestamp)
+                            : _buildBearMessage(message.text, message.timestamp),
+                      ],
+                    );
+                  },
+                ),
+              ),
+
+              // Input field
+              Container(
+                margin: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(30),
+                  border: Border.all(
+                    color: const Color(0xFFFAA71B),
+                    width: 2,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _messageController,
+                        decoration: const InputDecoration(
+                          isDense: true,
+                          hintText: '대화 하기',
+                          hintStyle: TextStyle(
+                            color: Color(0xFFCCCCCC),
+                            fontFamily: 'Ownglyph meetme',
+                          ),
+                          border: InputBorder.none,
+                        ),
+                        style: const TextStyle(
                           fontFamily: 'Ownglyph meetme',
                         ),
-                        border: InputBorder.none,
+                        onSubmitted: _sendMessage,
                       ),
-                      style: const TextStyle(
-                        fontFamily: 'Ownglyph meetme',
+                    ),
+                    IconButton(
+                      icon: _isListening ? SvgPicture.asset(
+                        'assets/images/mic_active_icon.svg'
+                      ) : SvgPicture.asset(
+                          'assets/images/mic_icon.svg'
                       ),
-                      onSubmitted: _sendMessage,
+                      onPressed: _toggleListening,
                     ),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      _isListening ? Icons.mic : Icons.mic_none,
-                      color: _isListening ? const Color(0xFFFAA71B) : const Color(0xFF828282),
+                    IconButton(
+                      icon: SvgPicture.asset(
+                        'assets/images/emoji_icon.svg',
+                      ),
+                      onPressed: () {},
                     ),
-                    onPressed: _toggleListening,
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.emoji_emotions_outlined, color: Color(0xFF828282)),
-                    onPressed: () {},
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.image_outlined, color: Color(0xFF828282)),
-                    onPressed: () {},
-                  ),
-                ],
+                    IconButton(
+                      icon: SvgPicture.asset(
+                        'assets/images/image_icon.svg',
+                      ),
+                      onPressed: () {},
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

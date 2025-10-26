@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../widgets/bottom_nav_bar.dart';
 import '../services/user_service.dart';
+import 'package:flutter_inner_shadow/flutter_inner_shadow.dart';
 
 class CustomizeScreen extends StatefulWidget {
   const CustomizeScreen({super.key});
@@ -96,7 +97,7 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
                         blurRadius: 20,
                         offset: const Offset(0, 0),
                         spreadRadius: 3,
-                      )
+                      ),
                     ],
                     color: const Color(0xFFFFFFDD),
                     shape: RoundedRectangleBorder(
@@ -126,45 +127,69 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        '이름 : 박초연    나이 : 8세',
-                        style: TextStyle(
-                          color: Color(0xFF505050),
-                          fontSize: 11,
-                          fontFamily: 'Ownglyph meetme',
-                          fontWeight: FontWeight.w400,
-                        ),
-                        overflow: TextOverflow.ellipsis,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Text(
+                                '이름 : ${UserService().userName}',
+                                style: const TextStyle(
+                                  color: Color(0xFF505050),
+                                  fontSize: 14,
+                                  fontFamily: 'Ownglyph meetme',
+                                  fontWeight: FontWeight.w400,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const Text(
+                                '병원 : 조지병원',
+                                style: TextStyle(
+                                  color: Color(0xFF505050),
+                                  fontSize: 14,
+                                  fontFamily: 'Ownglyph meetme',
+                                  fontWeight: FontWeight.w400,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(width: 20),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              const Text(
+                                '나이 : 8세',
+                                style: TextStyle(
+                                  color: Color(0xFF505050),
+                                  fontSize: 14,
+                                  fontFamily: 'Ownglyph meetme',
+                                  fontWeight: FontWeight.w400,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const Text(
+                                '아픈 곳 : 백혈구',
+                                style: TextStyle(
+                                  color: Color(0xFF505050),
+                                  fontSize: 14,
+                                  fontFamily: 'Ownglyph meetme',
+                                  fontWeight: FontWeight.w400,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                      SizedBox(height: 2),
-                      Text(
-                        '병원 : 조지병원',
+                      const SizedBox(height: 2),
+                      const Text(
+                        '먹는약 : 항암제, 진통제',
                         style: TextStyle(
                           color: Color(0xFF505050),
-                          fontSize: 11,
-                          fontFamily: 'Ownglyph meetme',
-                          fontWeight: FontWeight.w400,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      SizedBox(height: 2),
-                      Text(
-                        '아픈 곳 : 백혈구',
-                        style: TextStyle(
-                          color: Color(0xFF505050),
-                          fontSize: 11,
-                          fontFamily: 'Ownglyph meetme',
-                          fontWeight: FontWeight.w400,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      SizedBox(height: 2),
-                      Text(
-                        '먹는약 : 항암제',
-                        style: TextStyle(
-                          color: Color(0xFF505050),
-                          fontSize: 11,
+                          fontSize: 14,
                           fontFamily: 'Ownglyph meetme',
                           fontWeight: FontWeight.w400,
                         ),
@@ -203,7 +228,7 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
                         blurRadius: 40,
                         offset: Offset(0, 4),
                         spreadRadius: 0,
-                      )
+                      ),
                     ],
                     shape: OvalBorder(),
                   ),
@@ -320,17 +345,26 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
               Positioned(
                 left: 52,
                 top: 234,
-                child: Container(
-                  width: 280,
-                  height: 29,
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFFF9F9F9),
-                    shape: RoundedRectangleBorder(
-                      side: const BorderSide(
-                        width: 3,
-                        color: Color(0xFFFAA71B),
+                child: InnerShadow(
+                  shadows: [
+                    Shadow(
+                      color: const Color(0xFFFF9B00),
+                      blurRadius: 20,
+                      offset: const Offset(0, 0),
+                    ),
+                  ],
+                  child: Container(
+                    width: 280,
+                    height: 29,
+                    decoration: ShapeDecoration(
+                      color: const Color(0xFFF9F9F9),
+                      shape: RoundedRectangleBorder(
+                        side: const BorderSide(
+                          width: 3,
+                          color: Color(0xFFFAA71B),
+                        ),
+                        borderRadius: BorderRadius.circular(12.50),
                       ),
-                      borderRadius: BorderRadius.circular(12.50),
                     ),
                   ),
                 ),
@@ -339,19 +373,26 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
               Positioned(
                 left: 52,
                 top: 234,
-                child: Container(
-                  width: 117,
-                  height: 29,
-                  decoration: ShapeDecoration(
-                    color: const Color(0xFFFAA71B),
-                    shape: RoundedRectangleBorder(
-                      side: const BorderSide(
-                        width: 2,
-                        color: Color(0xFFFAA71B),
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween<double>(begin: 0, end: 117),
+                  duration: const Duration(seconds: 1),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, value, child) {
+                    return Container(
+                      width: 117,
+                      height: 29,
+                      decoration: ShapeDecoration(
+                        color: const Color(0xFFFAA71B),
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(
+                            width: 2,
+                            color: Color(0xFFFAA71B),
+                          ),
+                          borderRadius: BorderRadius.circular(12.50),
+                        ),
                       ),
-                      borderRadius: BorderRadius.circular(12.50),
-                    ),
-                  ),
+                    );
+                  },
                 ),
               ),
               // Progress bar border
@@ -372,6 +413,7 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
                   ),
                 ),
               ),
+
               // Progress text
               const Positioned(
                 left: 59,
@@ -446,10 +488,10 @@ class _CustomizeScreenState extends State<CustomizeScreen> {
           ),
         ), //wow
       ),
-      bottomNavigationBar: SafeArea(
+      bottomNavigationBar: const SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+          padding: EdgeInsets.only(bottom: 0),
           child: BottomNavBar(currentIndex: 4),
         ),
       ),

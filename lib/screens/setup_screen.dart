@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../services/user_service.dart';
 
 class SetupScreen extends StatefulWidget {
@@ -239,6 +238,7 @@ class _SetupScreenState extends State<SetupScreen>
                                           fontWeight: FontWeight.w400,
                                         ),
                                         decoration: const InputDecoration(
+                                          isDense: true,
                                           border: InputBorder.none,
                                           hintText: '이름 입력',
                                           hintStyle: TextStyle(

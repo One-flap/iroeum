@@ -24,6 +24,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.pink),
         useMaterial3: true,
+        scaffoldBackgroundColor: const Color(0xFFFFFFDD), // #FFFFDD
       ),
       routerConfig: appRouter,
     );
