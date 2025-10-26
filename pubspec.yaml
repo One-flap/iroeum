@@ -45,6 +45,8 @@ dependencies:
   speech_to_text: ^7.0.0
   permission_handler: ^11.3.1
   flutter_inner_shadow: ^0.0.1
+  flutter_launcher_icons: ^0.14.4
+  nfc_manager: ^4.0.2
 
 dev_dependencies:
   flutter_test:
@@ -112,3 +114,7 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/app_icon.png" # 아이콘 이미지 경로

@@ -100,11 +100,65 @@ class _ChatScreenState extends State<ChatScreen> {
       });
     } else {
       // 마이크 권한 확인
-      final status = await Permission.microphone.request();
-      if (status != PermissionStatus.granted) {
+      PermissionStatus status = await Permission.microphone.status;
+
+      if (status.isDenied) {
+        // 권한이 거부된 상태면 요청
+        status = await Permission.microphone.request();
+      }
+
+      if (status.isPermanentlyDenied) {
+        // 영구적으로 거부된 경우 설정으로 이동
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              backgroundColor: const Color(0xFFFFFFDD),
+              title: const Text(
+                '마이크 권한 필요',
+                style: TextStyle(fontFamily: 'Ownglyph meetme'),
+              ),
+              content: const Text(
+                '음성 입력을 사용하려면 앱 설정에서 마이크 권한을 허용해주세요.',
+                style: TextStyle(fontFamily: 'Ownglyph meetme'),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    '취소',
+                    style: TextStyle(fontFamily: 'Ownglyph meetme'),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    openAppSettings();
+                    Navigator.pop(context);
+                  },
+                  child: const Text(
+                    '설정으로 이동',
+                    style: TextStyle(
+                      fontFamily: 'Ownglyph meetme',
+                      color: Color(0xFFFAA71B),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+        return;
+      }
+
+      if (!status.isGranted) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('마이크 권한이 필요해요')),
+            const SnackBar(
+              content: Text(
+                '마이크 권한이 필요해요',
+                style: TextStyle(fontFamily: 'Ownglyph meetme'),
+              ),
+            ),
           );
         }
         return;
