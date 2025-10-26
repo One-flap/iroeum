@@ -262,10 +262,10 @@ class _ChatScreenState extends State<ChatScreen> {
     await Future.delayed(const Duration(seconds: 1));
 
     final giftMessages = [
-      '오늘 내가 너를 위해서 작은 빈 하나 선물로 줄게!',
-      '너한테 꽃빈을 줄게! 받아줘!',
+      '오늘 내가 너를 위해서 작은 삔 하나 선물로 줄게!',
+      '너한테 꽃삔을 줄게! 받아줘!',
       '선물이야! 이거 보면 기분 좋아질 거야!',
-      '너랑 채팅 할 알아가니까 너무 좋아\n선물로 줄게!',
+      '너랑 채팅하며 너를 알아가니까 너무 좋아\n선물로 줄게!',
       '오늘 너 정말 잘했어! 선물 줄게!',
       '너는 최고야! 작은 선물을 준비했어!',
     ];
@@ -286,7 +286,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     setState(() {
       _messages.add(ChatMessage(
-        text: '${UserService().teddyName}에게 "꽃빈" 을 받았어!',
+        text: '${UserService().teddyName}에게 "꽃삔" 을 받았어!',
         isUser: false,
         timestamp: DateTime.now(),
         isGift: true,
@@ -1017,7 +1017,7 @@ class _GiftPopupState extends State<_GiftPopup> with SingleTickerProviderStateMi
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                '곰이에게 "꽃빈" 을 받았어!',
+                '곰이에게 "꽃삔" 을 받았어!',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 22,
@@ -1027,7 +1027,7 @@ class _GiftPopupState extends State<_GiftPopup> with SingleTickerProviderStateMi
                 ),
               ),
               const SizedBox(height: 30),
-              // 꽃빈 이미지
+              // 꽃삔 이미지
               Container(
                 width: 150,
                 height: 150,
