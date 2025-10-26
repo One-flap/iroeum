@@ -19,6 +19,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final ValueNotifier<double> _scaleNotifier = ValueNotifier(1.0);
 
   @override
+  void initState() {
+    super.initState();
+    // Context 등록 (딥링크 라우팅용)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        DeepLinkService().setContext(context);
+      }
+    });
+  }
+
+  @override
   void dispose() {
     _scaleNotifier.dispose();
     super.dispose();
@@ -151,18 +162,75 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   final age = int.tryParse(ageStr);
 
                   if (age != null) {
-                    await UserService().updatePatientInfo(
-                      userName: name,
-                      age: age,
-                      hospital: hospital,
-                      disease: disease,
-                      medications: meds,
-                    );
-
                     NfcManager.instance.stopSession();
                     if (mounted) {
                       Navigator.pop(context);
-                      context.go('/setup');
+
+                      // 확인 다이얼로그 표시
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (context) => AlertDialog(
+                          backgroundColor: const Color(0xFFFFFFDD),
+                          title: const Text(
+                            'NFC 태그 인식',
+                            style: TextStyle(fontFamily: 'Ownglyph meetme'),
+                          ),
+                          content: Text(
+                            '$name님의 정보가 인식되었습니다.\n\n기존 데이터를 지우고 새로 설정하시겠습니까?',
+                            style: const TextStyle(fontFamily: 'Ownglyph meetme'),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: const Text(
+                                '취소',
+                                style: TextStyle(fontFamily: 'Ownglyph meetme'),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              child: const Text(
+                                '진행',
+                                style: TextStyle(
+                                  fontFamily: 'Ownglyph meetme',
+                                  color: Color(0xFFFAA71B),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+
+                      if (confirmed == true) {
+                        // 기존 데이터 모두 삭제
+                        await UserService().clearAllData();
+
+                        // 환자 정보 저장
+                        await UserService().updatePatientInfo(
+                          userName: name,
+                          age: age,
+                          hospital: hospital,
+                          disease: disease,
+                          medications: meds,
+                        );
+
+                        if (mounted) {
+                          // NFC 태그 성공 알림
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('환자 정보가 등록되었습니다'),
+                              backgroundColor: Color(0xFF4CAF50),
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+
+                          // 잠시 대기 후 Setup으로 이동
+                          await Future.delayed(const Duration(milliseconds: 500));
+                          context.go('/setup');
+                        }
+                      }
                     }
                     return;
                   }
@@ -587,22 +655,77 @@ class _QRScannerScreenState extends State<_QRScannerScreen> {
             final age = int.tryParse(ageStr);
 
             if (age != null) {
-              await UserService().updatePatientInfo(
-                userName: name,
-                age: age,
-                hospital: hospital,
-                disease: disease,
-                medications: meds,
-              );
-
               // 스캐너를 먼저 중지
               await _controller?.stop();
 
               if (mounted) {
-                // 짧은 지연 후 화면 전환
-                await Future.delayed(const Duration(milliseconds: 300));
                 Navigator.pop(context);
-                context.go('/setup');
+
+                // 확인 다이얼로그 표시
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) => AlertDialog(
+                    backgroundColor: const Color(0xFFFFFFDD),
+                    title: const Text(
+                      'QR 코드 인식',
+                      style: TextStyle(fontFamily: 'Ownglyph meetme'),
+                    ),
+                    content: Text(
+                      '$name님의 정보가 인식되었습니다.\n\n기존 데이터를 지우고 새로 설정하시겠습니까?',
+                      style: const TextStyle(fontFamily: 'Ownglyph meetme'),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: const Text(
+                          '취소',
+                          style: TextStyle(fontFamily: 'Ownglyph meetme'),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        child: const Text(
+                          '진행',
+                          style: TextStyle(
+                            fontFamily: 'Ownglyph meetme',
+                            color: Color(0xFFFAA71B),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (confirmed == true) {
+                  // 기존 데이터 모두 삭제
+                  await UserService().clearAllData();
+
+                  // 환자 정보 저장
+                  await UserService().updatePatientInfo(
+                    userName: name,
+                    age: age,
+                    hospital: hospital,
+                    disease: disease,
+                    medications: meds,
+                  );
+
+                  if (mounted) {
+                    // QR 스캔 성공 알림
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('환자 정보가 등록되었습니다'),
+                        backgroundColor: Color(0xFF4CAF50),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+
+                    // 잠시 대기 후 Setup으로 이동
+                    await Future.delayed(const Duration(milliseconds: 500));
+                    context.go('/setup');
+                  }
+                }
               }
             }
           }

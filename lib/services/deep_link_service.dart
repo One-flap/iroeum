@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'user_service.dart';
 
 class DeepLinkService {
@@ -14,12 +15,24 @@ class DeepLinkService {
   // 환자 정보 저장용
   Map<String, dynamic>? _patientData;
 
+  // BuildContext 저장 (라우팅용)
+  BuildContext? _context;
+
   Map<String, dynamic>? get patientData => _patientData;
+
+  // Context 등록 (앱 시작 후 호출)
+  void setContext(BuildContext context) {
+    _context = context;
+  }
 
   // 딥링크 리스너 시작
   Future<void> initialize() async {
+    debugPrint('DeepLinkService: Initializing...');
+
     // 앱이 종료된 상태에서 딥링크로 열린 경우
     final initialLink = await _appLinks.getInitialLink();
+    debugPrint('DeepLinkService: initialLink = $initialLink');
+
     if (initialLink != null) {
       await _handleDeepLink(initialLink);
     }
@@ -27,12 +40,15 @@ class DeepLinkService {
     // 앱이 실행 중일 때 딥링크 수신
     _linkSubscription = _appLinks.uriLinkStream.listen(
       (uri) {
+        debugPrint('DeepLinkService: Received URI from stream: $uri');
         _handleDeepLink(uri);
       },
       onError: (err) {
         debugPrint('Deep link error: $err');
       },
     );
+
+    debugPrint('DeepLinkService: Initialization complete. patientData = $_patientData');
   }
 
   // 딥링크 처리
@@ -54,7 +70,13 @@ class DeepLinkService {
         final age = int.tryParse(ageStr);
 
         if (age != null) {
-          // 환자 정보 저장
+          debugPrint('DeepLinkService: Valid patient data found. Clearing all data...');
+
+          // 기존 데이터 모두 삭제
+          await UserService().clearAllData();
+          debugPrint('DeepLinkService: Data cleared. isSetupComplete = ${UserService().isSetupComplete}');
+
+          // 환자 정보 저장 (메모리에만, SharedPreferences는 Setup 완료 시)
           _patientData = {
             'name': name,
             'age': age,
@@ -62,8 +84,9 @@ class DeepLinkService {
             'disease': disease,
             'medications': meds,
           };
+          debugPrint('DeepLinkService: _patientData set to $_patientData');
 
-          // UserService에 바로 저장
+          // UserService에 환자 정보만 저장 (is_setup_complete는 false로 유지)
           await UserService().updatePatientInfo(
             userName: name,
             age: age,
@@ -72,7 +95,13 @@ class DeepLinkService {
             medications: meds,
           );
 
-          debugPrint('Patient data saved from deep link: $_patientData');
+          debugPrint('DeepLinkService: Patient data saved. isSetupComplete = ${UserService().isSetupComplete}');
+
+          // 앱이 실행 중일 때 딥링크가 도착하면 자동으로 Setup으로 이동
+          if (_context != null && _context!.mounted) {
+            debugPrint('DeepLinkService: Navigating to /setup');
+            _context!.go('/setup');
+          }
         }
       }
     }

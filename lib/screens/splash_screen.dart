@@ -16,34 +16,40 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    // Context 등록 (딥링크 라우팅용)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        DeepLinkService().setContext(context);
+      }
+    });
     _navigateAfterDelay();
   }
 
   Future<void> _navigateAfterDelay() async {
-    // 최소 2초 대기
+    // 최소 2초 대기 (딥링크는 main에서 이미 처리됨)
     await Future.delayed(const Duration(seconds: 2));
 
-    // 딥링크 처리를 위해 추가로 조금 더 대기 (최대 500ms)
-    int attempts = 0;
-    while (attempts < 5) {
-      await Future.delayed(const Duration(milliseconds: 100));
+    if (mounted) {
+      final patientData = DeepLinkService().patientData;
+      final isSetupComplete = UserService().isSetupComplete;
 
-      if (mounted) {
-        // 딥링크로 환자 정보가 있으면 Setup으로
-        if (DeepLinkService().patientData != null) {
-          context.go('/setup');
-          return;
-        }
+      debugPrint('Splash navigation check:');
+      debugPrint('  patientData: $patientData');
+      debugPrint('  isSetupComplete: $isSetupComplete');
+
+      // 딥링크로 환자 정보가 있으면 Setup으로 (기존 사용자라도!)
+      if (patientData != null) {
+        debugPrint('  -> Going to /setup (deep link detected)');
+        context.go('/setup');
+        return;
       }
 
-      attempts++;
-    }
-
-    // 딥링크가 없으면 기존 로직
-    if (mounted) {
-      if (UserService().isSetupComplete) {
+      // 딥링크가 없으면 기존 로직
+      if (isSetupComplete) {
+        debugPrint('  -> Going to / (setup complete)');
         context.go('/');
       } else {
+        debugPrint('  -> Going to /signup (setup not complete)');
         context.go('/signup');
       }
     }
