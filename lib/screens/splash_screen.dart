@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../services/user_service.dart';
+import '../services/deep_link_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -18,8 +19,12 @@ class _SplashScreenState extends State<SplashScreen> {
     // Show splash for 2 seconds then navigate based on setup status
     Timer(const Duration(seconds: 2), () {
       if (mounted) {
+        // 딥링크로 환자 정보가 있으면 Setup으로
+        if (DeepLinkService().patientData != null) {
+          context.go('/setup');
+        }
         // setup이 완료되지 않았으면 signup으로, 완료되었으면 home으로
-        if (UserService().isSetupComplete) {
+        else if (UserService().isSetupComplete) {
           context.go('/');
         } else {
           context.go('/signup');

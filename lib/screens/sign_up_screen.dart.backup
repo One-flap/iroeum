@@ -206,19 +206,133 @@ class _SignUpScreenState extends State<SignUpScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const _QRScannerScreen(),
+        builder: (context) => _QRScannerScreen(),
       ),
     );
+  }
+}
+
+class _QRScannerScreen extends StatefulWidget {
+  @override
+  State<_QRScannerScreen> createState() => _QRScannerScreenState();
+}
+
+class _QRScannerScreenState extends State<_QRScannerScreen> {
+  bool _isProcessing = false;
+  MobileScannerController? _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = MobileScannerController();
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleBarcode(BarcodeCapture capture) async {
+    if (_isProcessing) return;
+
+    final List<Barcode> barcodes = capture.barcodes;
+    for (final barcode in barcodes) {
+      final String? code = barcode.rawValue;
+      if (code != null && code.startsWith('heroum://patient')) {
+        setState(() {
+          _isProcessing = true;
+        });
+
+        try {
+          final uri = Uri.parse(code);
+          final params = uri.queryParameters;
+
+          final name = params['name'];
+          final ageStr = params['age'];
+          final hospital = params['hospital'];
+          final disease = params['disease'];
+          final meds = params['meds'];
+
+          if (name != null && ageStr != null && hospital != null &&
+              disease != null && meds != null) {
+            final age = int.tryParse(ageStr);
+
+            if (age != null) {
+              await UserService().updatePatientInfo(
+                userName: name,
+                age: age,
+                hospital: hospital,
+                disease: disease,
+                medications: meds,
+              );
+
+              if (mounted) {
+                await _controller?.stop();
+                Navigator.pop(context);
+                context.go('/setup');
+              }
+            }
+          }
+        } catch (e) {
+          debugPrint('QR code processing error: $e');
+          if (mounted) {
+            setState(() {
+              _isProcessing = false;
+            });
+          }
+        }
+        break;
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      extendBody: true,
-      extendBodyBehindAppBar: true,
-      resizeToAvoidBottomInset: false,
-      body: Container(
+      backgroundColor: const Color(0xFFFFFFDD),
+      appBar: AppBar(
+        title: const Text(
+          'QR 코드 스캔',
+          style: TextStyle(fontFamily: 'Ownglyph meetme'),
+        ),
+        backgroundColor: const Color(0xFFFFFFDD),
+      ),
+      body: Stack(
+        children: [
+          MobileScanner(
+            controller: _controller,
+            onDetect: _handleBarcode,
+          ),
+          if (_isProcessing)
+            Container(
+              color: Colors.black54,
+              child: const Center(
+                child: CircularProgressIndicator(
+                  color: Color(0xFFFAA71B),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SignUpScreenMainWidget extends StatelessWidget {
+  final ValueNotifier<double> scaleNotifier;
+  final VoidCallback onNFCTap;
+  final VoidCallback onQRTap;
+
+  const _SignUpScreenMainWidget({
+    required this.scaleNotifier,
+    required this.onNFCTap,
+    required this.onQRTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
         width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(
@@ -532,126 +646,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-// QR 스캐너 화면
-class _QRScannerScreen extends StatefulWidget {
-  const _QRScannerScreen();
-
-  @override
-  State<_QRScannerScreen> createState() => _QRScannerScreenState();
-}
-
-class _QRScannerScreenState extends State<_QRScannerScreen> {
-  bool _isProcessing = false;
-  MobileScannerController? _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = MobileScannerController();
-  }
-
-  @override
-  void dispose() {
-    _controller?.dispose();
-    super.dispose();
-  }
-
-  Future<void> _handleBarcode(BarcodeCapture capture) async {
-    if (_isProcessing) return;
-
-    final List<Barcode> barcodes = capture.barcodes;
-    for (final barcode in barcodes) {
-      final String? code = barcode.rawValue;
-      if (code != null && code.startsWith('heroum://patient')) {
-        setState(() {
-          _isProcessing = true;
-        });
-
-        try {
-          final uri = Uri.parse(code);
-          final params = uri.queryParameters;
-
-          final name = params['name'];
-          final ageStr = params['age'];
-          final hospital = params['hospital'];
-          final disease = params['disease'];
-          final meds = params['meds'];
-
-          if (name != null && ageStr != null && hospital != null &&
-              disease != null && meds != null) {
-            final age = int.tryParse(ageStr);
-
-            if (age != null) {
-              await UserService().updatePatientInfo(
-                userName: name,
-                age: age,
-                hospital: hospital,
-                disease: disease,
-                medications: meds,
-              );
-
-              // 스캐너를 먼저 중지
-              await _controller?.stop();
-
-              if (mounted) {
-                // 짧은 지연 후 화면 전환
-                await Future.delayed(const Duration(milliseconds: 300));
-                Navigator.pop(context);
-                context.go('/setup');
-              }
-            }
-          }
-        } catch (e) {
-          debugPrint('QR code processing error: $e');
-          if (mounted) {
-            setState(() {
-              _isProcessing = false;
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('QR 코드 처리 실패: $e'),
-                backgroundColor: const Color(0xFFFAA71B),
-              ),
-            );
-          }
-        }
-        break;
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFFFDD),
-      appBar: AppBar(
-        title: const Text(
-          'QR 코드 스캔',
-          style: TextStyle(fontFamily: 'Ownglyph meetme'),
-        ),
-        backgroundColor: const Color(0xFFFFFFDD),
-      ),
-      body: Stack(
-        children: [
-          MobileScanner(
-            controller: _controller,
-            onDetect: _handleBarcode,
-          ),
-          if (_isProcessing)
-            Container(
-              color: Colors.black54,
-              child: const Center(
-                child: CircularProgressIndicator(
-                  color: Color(0xFFFAA71B),
-                ),
-              ),
-            ),
-        ],
       ),
     );
   }
